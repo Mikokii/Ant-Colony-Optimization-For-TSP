@@ -4,6 +4,8 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <limits>
+#include <random>
 using namespace std;
 
 float calculateDistance(pair<int, int> point1, pair<int, int> point2);
@@ -18,8 +20,6 @@ int main(){
     pair<float, vector<int>> result;
     float min_distance;
     vector<int> min_route;
-
-    srand(time(nullptr));
 
     cout << "Vertex number: ";
     cin >> vertices_number;
@@ -60,6 +60,8 @@ int main(){
 
 vector<pair<int, int>> generateVerticesList(int vertices_number, int range){
     vector<pair<int, int>> vertices_list, all_pairs_list;
+    random_device rd;
+    mt19937 g(rd());
 
     for (int i = 0; i < vertices_number; i++){
         for (int j = 0; j < vertices_number; j++){
@@ -67,7 +69,7 @@ vector<pair<int, int>> generateVerticesList(int vertices_number, int range){
         }
     }
 
-    random_shuffle(all_pairs_list.begin(), all_pairs_list.end());
+    shuffle(all_pairs_list.begin(), all_pairs_list.end(), g);
     for (int i = 0; i < vertices_number; i++){
         vertices_list.push_back(all_pairs_list[i]);
     }
@@ -101,7 +103,7 @@ pair<float, vector<int>> greedyTSP(vector<vector<float>> adjacency_matrix, int v
     route.push_back(0);
     visited[0] = 1;
     while (route.size() < vertices_number){
-        min_distance = __FLT_MAX__;
+        min_distance = numeric_limits<float>::max();
         current_vertex = route.back();
         for (int i = 0; i < vertices_number; i++) {
             if (current_vertex != i && !visited[i] && adjacency_matrix[current_vertex][i] < min_distance) {
