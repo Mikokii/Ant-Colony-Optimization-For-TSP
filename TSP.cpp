@@ -6,10 +6,12 @@
 #include <algorithm>
 #include <limits>
 #include <random>
+#include <fstream>
 using namespace std;
 
 float calculateDistance(pair<int, int> point1, pair<int, int> point2);
 vector<pair<int, int>> generateVerticesList(int vertices_number, int range);
+bool getVerticesFromFile(const char* filename, vector<pair<int, int>>* vertices_list);
 vector<vector<float>> generateAdjacencyMatrix(int vertices_number, vector<pair<int, int>> vertices_list);
 pair<float, vector<int>> greedyTSP(vector<vector<float>> adjacency_matrix, int vertices_number);
 
@@ -21,12 +23,22 @@ int main(){
     float min_distance;
     vector<int> min_route;
 
-    cout << "Vertex number: ";
-    cin >> vertices_number;
-    cout << "Range: ";
-    cin >> range;
+    int answer;
+    cout << "What input do you want to use?" << endl;
+    cout << "File (0) or Your input (1)" << endl;
+    cin >> answer;
+    
+    if(answer){
+        cout << "Vertex number: ";
+        cin >> vertices_number;
+        cout << "Range: ";
+        cin >> range;
+        
+        vertices_list = generateVerticesList(vertices_number, range);
+    }
+    else{
 
-    vertices_list = generateVerticesList(vertices_number, range);
+    }
 
     cout << "Point coordinates: " << endl;
     for (int i = 0; i < vertices_number; i++){
@@ -77,6 +89,16 @@ vector<pair<int, int>> generateVerticesList(int vertices_number, int range){
     return vertices_list;
 }
 
+bool getVerticesFromFile(const char* filename, vector<pair<int, int>>* vertices_list){
+    ifstream inputFile(filename);
+    if(inputFile.is_open()){
+        return 1;
+    }else{
+        cout << "Error. Couldn't open file: " << filename << endl;
+        return 0;
+    }
+}
+
 vector<vector<float>> generateAdjacencyMatrix(int vertices_number, vector<pair<int, int>> vertices_list){
     vector<vector<float>> adjacency_matrix;
     for (int i = 0; i < vertices_number; i++){
@@ -90,8 +112,7 @@ vector<vector<float>> generateAdjacencyMatrix(int vertices_number, vector<pair<i
     return adjacency_matrix;
 }
 
-float calculateDistance(pair<int, int> point1, pair<int, int> point2) 
-{ 
+float calculateDistance(pair<int, int> point1, pair<int, int> point2) { 
     return sqrt(pow(point2.first - point1.first, 2) + pow(point2.second - point1.second, 2) * 1.0); 
 }
 
