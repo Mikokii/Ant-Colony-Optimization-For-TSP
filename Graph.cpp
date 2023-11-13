@@ -1,4 +1,4 @@
-#include "Graph.h"
+#include "Graph.hpp"
 
 #include <random>
 #include <ctime>
