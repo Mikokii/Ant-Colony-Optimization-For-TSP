@@ -19,12 +19,13 @@ int main(){
         std::cin >> range;
         
        graph.initRandomGraph(vert, range);
+       graph.saveGraphToFile("out.txt");
     }
     else{
         graph.initGraphFromFile("test.txt");
     }
     graph.generateAdjacencyMatrix();
-    //graph.printGraph();
+    graph.printGraph();
 
     std::pair<float, std::vector<int>> result = graph.greedyTSP();
     float min_distance = result.first;

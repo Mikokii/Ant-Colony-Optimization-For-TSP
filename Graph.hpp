@@ -12,6 +12,7 @@ public:
     Graph();
     ~Graph();
     void initRandomGraph(int vertices_number, int range);
+    void saveGraphToFile(const char* filename);
     void initGraphFromFile(const char* filename);
     void generateAdjacencyMatrix();
     void printGraph();

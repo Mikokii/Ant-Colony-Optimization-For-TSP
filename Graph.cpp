@@ -19,8 +19,8 @@ void Graph::initRandomGraph(int vert, int range){
     std::random_device rd;
     std::mt19937 g(rd());
 
-    for (int i = 0; i < vertices_number; i++){
-        for (int j = 0; j < vertices_number; j++){
+    for (int i = 1; i < range; i++){
+        for (int j = 1; j < range; j++){
             all_pairs_list.push_back(std::pair<int, int>(i,j));
         }
     }
@@ -29,6 +29,18 @@ void Graph::initRandomGraph(int vert, int range){
 
     for (int i = 0; i < vertices_number; i++){
         vertices_list.push_back(all_pairs_list[i]);
+    }
+}
+
+void Graph::saveGraphToFile(const char* filename){
+    std::ofstream outputFile(filename);
+    if (outputFile.is_open()){
+        outputFile << vertices_number << std::endl;
+        for (int i = 0; i < vertices_number; i++){
+            outputFile << i+1 << " " << vertices_list[i].first << " " << vertices_list[i].second << std::endl;
+        }
+    } else {
+        std::cout << "Error. Couldn't write to file " << std::endl;
     }
 }
 
