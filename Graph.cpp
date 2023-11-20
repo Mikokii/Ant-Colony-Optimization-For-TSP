@@ -19,8 +19,8 @@ void Graph::initRandomGraph(int vert, int range){
     std::random_device rd;
     std::mt19937 g(rd());
 
-    for (int i = 1; i < range; i++){
-        for (int j = 1; j < range; j++){
+    for (int i = 1; i <= range; i++){
+        for (int j = 1; j <= range; j++){
             all_pairs_list.push_back(std::pair<int, int>(i,j));
         }
     }
