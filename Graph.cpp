@@ -69,7 +69,6 @@ void Graph::printGraph(){
     for (int i = 0; i < vertices_number; i++){
         for (int j = 0; j < vertices_number; j++){
             printf("%.4f ", adjacency_matrix[i][j]);
-            //cout << adjacency_matrix[i][j] << " ";
         }
         std::cout << std::endl;
     }

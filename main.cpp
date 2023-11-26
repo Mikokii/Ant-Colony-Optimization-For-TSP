@@ -1,15 +1,35 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 #include "Graph.hpp"
+
+std::string handleInput(int argc, char *argv[]);
+void saveResultToFile(float min_distance, std::vector<int> min_route, std::string filename);
 
 Graph graph;
 
 int main(int argc, char *argv[]){
+    std::string filename = handleInput(argc, argv);
 
+    graph.generateAdjacencyMatrix();
+    std::pair<float, std::vector<int>> result = graph.greedyTSP();
+    float min_distance = result.first;
+    std::vector<int> min_route = result.second;
+
+    saveResultToFile(min_distance, min_route, filename);
+    std::cout << "Calculated distance: " << min_distance << std::endl;
+    std::cout << "Calculated route: ";
+    for (int i = 0; i < min_route.size(); i++){
+        std::cout << min_route[i] + 1 << " ";
+    }
+
+    return 0;
+}
+
+std::string handleInput(int argc, char *argv[]){
     int answer=-1;
     std::string filename;
-
-    if(argc < 1){
+    if(argc < 2){
         std::cout << "What input do you want to use?" << std::endl;
         std::cout << "File (0) or Your input (1)" << std::endl;
         std::cin >> answer;
@@ -24,32 +44,29 @@ int main(int argc, char *argv[]){
             graph.initRandomGraph(vert, range);
 
             graph.saveGraphToFile("out.txt");
-        }
-            else graph.initGraphFromFile("test.txt");
+            filename = "out";
+        } else {
+            graph.initGraphFromFile("test.txt");
             filename = "test";
-    }
-    else {
+        }
+    } else {
         graph.initGraphFromFile(argv[1]);
-        std::string filename(argv[1]);
-        filename =  filename.substr(0, filename.find("."));
-        std::cout << filename << std::endl;
+        filename = argv[1];
+        filename =  filename.substr(0, filename.find_last_of("."));
     }
+    return filename + "_wynik.txt";
+}
 
-    filename += "_wynik.txt";
-
-    graph.generateAdjacencyMatrix();
-    // graph.printGraph();
-
-    std::pair<float, std::vector<int>> result = graph.greedyTSP();
-    float min_distance = result.first;
-    std::vector<int> min_route = result.second;
-
-    //std::ofstream outFile; - trzeba tu zrobić wpisywanie wyników do filename pliku, nie dziala mi deklaracje idk why
-    std::cout << "Calculated distance: " << min_distance << std::endl;
-    std::cout << "Calculated route: ";
-    for (int i = 0; i < min_route.size(); i++){
-        std::cout << min_route[i] + 1 << " ";
+void saveResultToFile(float min_distance, std::vector<int> min_route, std::string filename){
+    std::ofstream resultFile(filename);
+    if (resultFile.is_open()){
+        resultFile << "Calculated distance: " << min_distance << std::endl;
+        resultFile << "Calculated route: ";
+        for (int i = 0; i < min_route.size(); i++){
+            resultFile << min_route[i] + 1 << " ";
+        }
+        resultFile << std::endl;
+    } else {
+        std::cout << "Error. Couldn't write to file " << std::endl;
     }
-
-    return 0;
 }
