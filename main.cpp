@@ -43,11 +43,11 @@ std::string handleInput(int argc, char *argv[]){
             
             graph.initRandomGraph(vert, range);
 
-            graph.saveGraphToFile("out.txt");
-            filename = "out";
+            graph.saveGraphToFile("txt_files/out.txt");
+            filename = "txt_files/out";
         } else {
-            graph.initGraphFromFile("test.txt");
-            filename = "test";
+            graph.initGraphFromFile("txt_files/test.txt");
+            filename = "txt_files/test";
         }
     } else {
         graph.initGraphFromFile(argv[1]);
