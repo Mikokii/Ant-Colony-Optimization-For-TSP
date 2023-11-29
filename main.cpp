@@ -12,7 +12,8 @@ int main(int argc, char *argv[]){
     std::string filename = handleInput(argc, argv);
 
     graph.generateAdjacencyMatrix();
-    std::pair<float, std::vector<int>> result = graph.greedyTSP();
+    // std::pair<float, std::vector<int>> result = graph.greedyTSP();
+    std::pair<float, std::vector<int>> result = graph.antColonySystem(30, 100, 1, 5, 0.5, 100);
     float min_distance = result.first;
     std::vector<int> min_route = result.second;
 
