@@ -13,7 +13,7 @@ int main(int argc, char *argv[]){
 
     graph.generateAdjacencyMatrix();
     // std::pair<float, std::vector<int>> result = graph.greedyTSP();
-    std::pair<float, std::vector<int>> result = graph.antColonySystem(125, 100, 1, 5, 0.5, 100);
+    std::pair<float, std::vector<int>> result = graph.antColonySystem(50, 100, 1, 5, 0.5, 100);
     float min_distance = result.first;
     std::vector<int> min_route = result.second;
 

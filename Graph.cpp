@@ -153,7 +153,7 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
         for (int a = 0; a < ants_number; a++){
             ants_paths[a].push_back(ants_paths[a][0]);
             float distance = 0.0;
-            for (int k = 0; k < vertices_number - 1; k++){
+            for (int k = 0; k < vertices_number; k++){
                 distance += adjacency_matrix[ants_paths[a][k]][ants_paths[a][k+1]];
             }
             for (int k = 0; k < vertices_number - 1; k++){

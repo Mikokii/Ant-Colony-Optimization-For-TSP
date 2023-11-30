@@ -23,6 +23,7 @@ public:
     std::pair<float, std::vector<int>> antColonySystem(int ants_number, int iterations, float alpha, float beta, float p, float Q);
     float calculateProbability(int destination, std::vector<int> path, float alpha, float beta, std::vector<std::vector<float>> &trail_matrix, std::vector<int> &allowed);
     int pickNextPoint(std::vector<float> &probabilities);
+    // float checkResult(std::vector<int> route);
 };
 
 float calculateDistance(std::pair<int, int> point1, std::pair<int, int> point2);
