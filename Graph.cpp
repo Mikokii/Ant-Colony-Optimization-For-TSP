@@ -1,12 +1,7 @@
 #include "Graph.hpp"
 
-#include <random>
-#include <ctime>
-#include <cmath>
-#include <algorithm>
-#include <fstream>
-#include <limits>
-#include <chrono>
+unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+std::mt19937 g(seed);
 
 Graph::Graph(){}
 
@@ -16,9 +11,6 @@ void Graph::initRandomGraph(int vert, int range){
     vertices_number = vert;
     std::cout << vertices_number << std::endl;
     std::vector<std::pair<int, int>> all_pairs_list;
-
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::mt19937 g(seed);
 
     for (int i = 1; i <= range; i++){
         for (int j = 1; j <= range; j++){
@@ -117,9 +109,8 @@ std::vector<std::vector<float>> Graph::getAdjacencyMatrix(){
     return adjacency_matrix;
 }
 
-std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float alpha, float beta, float p, float Q){
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::mt19937 g(seed);
+std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float alpha, float beta, float p, float Q, float c){
+
     std::uniform_int_distribution<int> rng(0, vertices_number-1);
 
     float min_distance = std::numeric_limits<float>::max();
@@ -127,7 +118,7 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
 
     iterations = it;
     ants_number = a_n;
-    std::vector<std::vector<float>> trail_matrix (vertices_number, std::vector<float>(vertices_number, 1.0)); // 1 to c i to ma być niewiadomo jaka liczba mała dodatnia
+    std::vector<std::vector<float>> trail_matrix (vertices_number, std::vector<float>(vertices_number, c)); // 1 to c i to ma być niewiadomo jaka liczba mała dodatnia
     std::vector<std::vector<float>> tmp_trail_matrix (vertices_number, std::vector<float>(vertices_number,0));
     std::vector<std::vector<int>> ants_paths (ants_number, std::vector<int>());
     std::vector<std::vector<int>> ants_allowed (ants_number, std::vector<int>(vertices_number, 1));
@@ -142,7 +133,6 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
         for(int k = 0; k < vertices_number - 1; k++){
             for (int a = 0; a < ants_number; a++){
                 for (int j = 0; j < vertices_number; j++){
-                    // std::cout << "co: " << ants_paths[a][0] << std::endl;
                     ants_probability[a][j] = calculateProbability(j, ants_paths[a], alpha, beta, trail_matrix, ants_allowed[a]);
                 }
                 int point = pickNextPoint(ants_probability[a]);
@@ -218,18 +208,9 @@ float Graph::calculateProbability(int j, std::vector<int> path, float alpha, flo
 }
 
 int Graph::pickNextPoint(std::vector<float> &probabilities){
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::mt19937 g(seed);
+    
     std::uniform_real_distribution<float> rng(0.0, 1.0);
     float random_choice;
-    float sum_probabilities = 0.0;
-    for (int i = 0; i < probabilities.size(); i++){
-        sum_probabilities += probabilities[i];
-    }
-    for (int i = 0; i < probabilities.size(); i++){
-        probabilities[i] /= sum_probabilities;
-    }
-    //std::cout << sum_probabilities << " ";
     while (true){
         random_choice = rng(g);
         for (int i = 0; i < vertices_number; i++){
