@@ -130,20 +130,24 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
     std::vector<std::vector<float>> trail_matrix (vertices_number, std::vector<float>(vertices_number, 1.0)); // 1 to c i to ma być niewiadomo jaka liczba mała dodatnia
     std::vector<std::vector<float>> tmp_trail_matrix (vertices_number, std::vector<float>(vertices_number,0));
     std::vector<std::vector<int>> ants_paths (ants_number, std::vector<int>());
+    std::vector<std::vector<int>> ants_allowed (ants_number, std::vector<int>(vertices_number, 1));
     std::vector<std::vector<float>> ants_probability (ants_number, std::vector<float> (vertices_number, 0));
 
     for (int i = 0; i<iterations; i++){
         std::cout << "Iteration: " << i << "    ";
         for (int a = 0; a < ants_number; a++){
             ants_paths[a].push_back(rng(g));
+            ants_allowed[a][ants_paths[a][0]] = 0;
         }
         for(int k = 0; k < vertices_number - 1; k++){
             for (int a = 0; a < ants_number; a++){
                 for (int j = 0; j < vertices_number; j++){
                     // std::cout << "co: " << ants_paths[a][0] << std::endl;
-                    ants_probability[a][j] = calculateProbability(j, ants_paths[a], alpha, beta, trail_matrix);
+                    ants_probability[a][j] = calculateProbability(j, ants_paths[a], alpha, beta, trail_matrix, ants_allowed[a]);
                 }
-                ants_paths[a].push_back(pickNextPoint(ants_probability[a]));
+                int point = pickNextPoint(ants_probability[a]);
+                ants_paths[a].push_back(point);
+                ants_allowed[a][point] = 0;
             }
         }
         for (int a = 0; a < ants_number; a++){
@@ -171,33 +175,30 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
         }
         for (int a = 0; a < ants_number; a++){
             ants_paths[a].clear();
+            ants_allowed[a] = std::vector<int>(vertices_number, 1);
         }
         std::cout << "distance: " << min_distance << std::endl;
     }
     return std::pair<float, std::vector<int>>(min_distance, route);
 }
 
-float Graph::calculateProbability(int j, std::vector<int> path, float alpha, float beta, std::vector<std::vector<float>> &trail_matrix){
+float Graph::calculateProbability(int j, std::vector<int> path, float alpha, float beta, std::vector<std::vector<float>> &trail_matrix, std::vector<int> &allowed){
     int i = path.back();
-    std::vector<int> allowed;
-    for (int l = 0; l < vertices_number; l++){
-        if (std::find(path.begin(), path.end(), l) == path.end()){
-            allowed.push_back(l);
-        }
-        else if (l == j){
-            return 0.0;
-        }
+    if (allowed[j] == 0){
+        return 0.0;
     }
     float numerator = pow(trail_matrix[i][j], alpha);
     float denominator = 0.0;
-    for (int k = 0; k < allowed.size(); k++){
-        int index = allowed[k];
-        float calc = pow(trail_matrix[i][index], alpha) * pow(1.0/adjacency_matrix[i][index], beta);
+    for (int k = 0; k < vertices_number; k++){
+        if (allowed[k] == 0){
+            continue;
+        }
+        float calc = pow(trail_matrix[i][k], alpha) * pow(1.0/adjacency_matrix[i][k], beta);
         if (calc == -1){
             denominator += std::numeric_limits<float>::min();
         }
         else{
-            denominator += pow(trail_matrix[i][index], alpha) * pow(1.0/adjacency_matrix[i][index], beta);
+            denominator += calc;
         }
     }
     denominator *= pow(adjacency_matrix[i][j], beta);
