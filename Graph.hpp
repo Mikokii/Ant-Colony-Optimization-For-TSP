@@ -27,7 +27,7 @@ public:
     std::pair<float, std::vector<int>> greedyTSP();
     std::vector<std::vector<float>> getAdjacencyMatrix();
     std::pair<float, std::vector<int>> antColonySystem(int ants_number, int iterations, float alpha, float beta, float p, float Q, float c);
-    float calculateProbability(int destination, std::vector<int> path, float alpha, float beta, std::vector<std::vector<float>> &trail_matrix, std::vector<int> &allowed);
+    float calculateProbability(int destination, std::vector<int> path, float alpha, float beta, std::vector<std::vector<float>> &trail_matrix, float denominator);
     int pickNextPoint(std::vector<float> &probabilities);
 };
 

@@ -118,7 +118,7 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
 
     iterations = it;
     ants_number = a_n;
-    std::vector<std::vector<float>> trail_matrix (vertices_number, std::vector<float>(vertices_number, c)); // 1 to c i to ma być niewiadomo jaka liczba mała dodatnia
+    std::vector<std::vector<float>> trail_matrix (vertices_number, std::vector<float>(vertices_number, c));
     std::vector<std::vector<float>> tmp_trail_matrix (vertices_number, std::vector<float>(vertices_number,0));
     std::vector<std::vector<int>> ants_paths (ants_number, std::vector<int>());
     std::vector<std::vector<int>> ants_allowed (ants_number, std::vector<int>(vertices_number, 1));
@@ -132,8 +132,27 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
         }
         for(int k = 0; k < vertices_number - 1; k++){
             for (int a = 0; a < ants_number; a++){
+                float denominator = 0.0;
+                int current = ants_paths[a].back();
+                for (int l = 0; l < vertices_number; l++){
+                    if (ants_allowed[a][l] == 0){
+                        continue;
+                    }
+                    float calc = pow(trail_matrix[current][l], alpha) * pow(1.0/adjacency_matrix[current][l], beta);
+                    if (calc == -1){
+                        denominator += std::numeric_limits<float>::min();
+                    }
+                    else{
+                        denominator += calc;
+                    }
+                }
                 for (int j = 0; j < vertices_number; j++){
-                    ants_probability[a][j] = calculateProbability(j, ants_paths[a], alpha, beta, trail_matrix, ants_allowed[a]);
+                    if (ants_allowed[a][j] != 0){
+                        ants_probability[a][j] = calculateProbability(j, ants_paths[a], alpha, beta, trail_matrix, denominator);
+                    }
+                    else {
+                        ants_probability[a][j] = 0.0;
+                    }
                 }
                 int point = pickNextPoint(ants_probability[a]);
                 ants_paths[a].push_back(point);
@@ -172,36 +191,23 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
     return std::pair<float, std::vector<int>>(min_distance, route);
 }
 
-float Graph::calculateProbability(int j, std::vector<int> path, float alpha, float beta, std::vector<std::vector<float>> &trail_matrix, std::vector<int> &allowed){
+float Graph::calculateProbability(int j, std::vector<int> path, float alpha, float beta, std::vector<std::vector<float>> &trail_matrix, float denominator){
     int i = path.back();
-    if (allowed[j] == 0){
-        return 0.0;
+    float numerator = pow(trail_matrix[i][j], alpha)/pow(adjacency_matrix[i][j], beta);
+    
+    if (numerator <= 0 && denominator <= 0){
+        std::cout << "numerator and denominator" << std::endl;
     }
-    float numerator = pow(trail_matrix[i][j], alpha);
-    float denominator = 0.0;
-    for (int k = 0; k < vertices_number; k++){
-        if (allowed[k] == 0){
-            continue;
-        }
-        float calc = pow(trail_matrix[i][k], alpha) * pow(1.0/adjacency_matrix[i][k], beta);
-        if (calc == -1){
-            denominator += std::numeric_limits<float>::min();
-        }
-        else{
-            denominator += calc;
-        }
-    }
-    denominator *= pow(adjacency_matrix[i][j], beta);
-    if(denominator == 0){
-        std::cout << "denominator = 0" << " at i= " << i << " j= " << j << std::endl;
-        return 1;
-    }
-    if(numerator < 0){
-        std::cout << "numerator < 0" << " at i= " << i << " j= " << j << std::endl;
+    if(numerator <= 0){
+        std::cout << "numerator <= 0" << " at i= " << i << " j= " << j << "tau = " << trail_matrix[i][j] << "distance = " << adjacency_matrix[i][j] << std::endl;
         return 0;
     }
+    if(denominator == 0){
+        std::cout << "denominator = 0" << " at i= " << i << " j= " << j << "tau = " << trail_matrix[i][j] << "distance = " << adjacency_matrix[i][j] << std::endl;
+        return 1;
+    }
     if(denominator < 0){
-        std::cout << "denominator < 0" << " at i= " << i << " j= " << j << std::endl;
+        std::cout << "denominator < 0" << " at i= " << i << " j= " << j << "tau = " << trail_matrix[i][j] << "distance = " << adjacency_matrix[i][j] << std::endl;
         return 0;
     }
     return numerator/denominator;
