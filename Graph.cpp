@@ -122,7 +122,7 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
     std::vector<std::vector<float>> tmp_trail_matrix (vertices_number, std::vector<float>(vertices_number,0));
     std::vector<std::vector<int>> ants_paths (ants_number, std::vector<int>());
     std::vector<std::vector<int>> ants_allowed (ants_number, std::vector<int>(vertices_number, 1));
-    std::vector<std::vector<float>> ants_probability (ants_number, std::vector<float> (vertices_number, 0));
+    std::vector<std::vector<long double>> ants_probability (ants_number, std::vector<long double> (vertices_number, 0));
 
     for (int i = 0; i<iterations; i++){
         std::cout << "Iteration: " << i << "    ";
@@ -132,28 +132,8 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
         }
         for(int k = 0; k < vertices_number - 1; k++){
             for (int a = 0; a < ants_number; a++){
-                float denominator = 0.0;
-                int current = ants_paths[a].back();
-                for (int l = 0; l < vertices_number; l++){
-                    if (ants_allowed[a][l] == 0){
-                        continue;
-                    }
-                    float calc = pow(trail_matrix[current][l], alpha) * pow(1.0/adjacency_matrix[current][l], beta);
-                    if (calc == -1){
-                        denominator += std::numeric_limits<float>::min();
-                    }
-                    else{
-                        denominator += calc;
-                    }
-                }
-                for (int j = 0; j < vertices_number; j++){
-                    if (ants_allowed[a][j] != 0){
-                        ants_probability[a][j] = calculateProbability(j, ants_paths[a], alpha, beta, trail_matrix, denominator);
-                    }
-                    else {
-                        ants_probability[a][j] = 0.0;
-                    }
-                }
+                int current_point = ants_paths[a].back();
+                calculateProbability(current_point, ants_allowed[a], ants_probability[a], trail_matrix, alpha, beta);
                 int point = pickNextPoint(ants_probability[a]);
                 ants_paths[a].push_back(point);
                 ants_allowed[a][point] = 0;
@@ -191,32 +171,54 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
     return std::pair<float, std::vector<int>>(min_distance, route);
 }
 
-float Graph::calculateProbability(int j, std::vector<int> path, float alpha, float beta, std::vector<std::vector<float>> &trail_matrix, float denominator){
-    int i = path.back();
-    float numerator = pow(trail_matrix[i][j], alpha)/pow(adjacency_matrix[i][j], beta);
-    
-    if (numerator <= 0 && denominator <= 0){
-        std::cout << "numerator and denominator" << std::endl;
+void Graph::calculateProbability(int current_point, std::vector<int> &allowed, std::vector<long double> &probabilities, std::vector<std::vector<float>> &trail_matrix, float alpha, float beta){
+    long double denominator = 0.0;
+    for (int i = 0; i < vertices_number; i++){
+        if(allowed[i] == 0){
+            continue;
+        }
+        long double calc = pow(trail_matrix[current_point][i], alpha) * pow(1.0/adjacency_matrix[current_point][i], beta);
+        if(calc < 0){
+            denominator += std::numeric_limits<long double>::min();
+        }
+        else{
+            denominator += calc;
+        }
     }
-    if(numerator <= 0){
-        std::cout << "numerator <= 0" << " at i= " << i << " j= " << j << "tau = " << trail_matrix[i][j] << "distance = " << adjacency_matrix[i][j] << std::endl;
-        return 0;
+    if(denominator <= 0) std::cout << "denominator <= 0 : " << denominator << std::endl;
+    for (int i = 0; i < vertices_number; i++){
+        if(i == current_point){
+            allowed[i] = 0;
+            probabilities[i] = 0;
+        }
+        else if (allowed[i] == 0){
+            probabilities[i] = 0;
+        }
+        else{
+            long double numerator = pow(trail_matrix[current_point][i], alpha)/pow(adjacency_matrix[current_point][i], beta);
+            if(numerator <= 0){
+                std::cout << "numerator <= 0" << " at i= " << i << "tau = " << trail_matrix[current_point][i] << "distance = " << adjacency_matrix[current_point][i] << std::endl;
+                probabilities[i] = 0;
+                continue;
+            }
+            else if(denominator == 0){
+                std::cout << "denominator = 0" << " at i= " << i << "tau = " << trail_matrix[current_point][i] << "distance = " << adjacency_matrix[current_point][i] << std::endl;
+                probabilities[i] = 1;
+                continue;
+            }
+            else{
+                probabilities[i] = numerator/denominator;
+                continue;
+            }
+        }
     }
-    if(denominator == 0){
-        std::cout << "denominator = 0" << " at i= " << i << " j= " << j << "tau = " << trail_matrix[i][j] << "distance = " << adjacency_matrix[i][j] << std::endl;
-        return 1;
-    }
-    if(denominator < 0){
-        std::cout << "denominator < 0" << " at i= " << i << " j= " << j << "tau = " << trail_matrix[i][j] << "distance = " << adjacency_matrix[i][j] << std::endl;
-        return 0;
-    }
-    return numerator/denominator;
 }
 
-int Graph::pickNextPoint(std::vector<float> &probabilities){
+
+int Graph::pickNextPoint(std::vector<long double> &probabilities){
     
-    std::uniform_real_distribution<float> rng(0.0, 1.0);
-    float random_choice;
+    std::uniform_real_distribution<long double> rng(0.0, 1.0);
+    long double random_choice;
     while (true){
         random_choice = rng(g);
         for (int i = 0; i < vertices_number; i++){
