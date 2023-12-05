@@ -6,8 +6,8 @@
 std::string handleInstanceInput(int argc, char *argv[]);
 int handleAlgorithmTypeInput();
 std::vector<float> handleACSInput();
-std::vector<float> handleAutomaticACSInput();
-std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_input, std::string filename);
+std::pair<std::vector<float>, std::vector<float>> handleAutomaticACSInput();
+std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_input, std::vector<float> a_ACS_intervals, std::string filename);
 void saveResultToFile(float min_distance, std::vector<int> min_route, std::string filename);
 
 Graph graph;
@@ -24,8 +24,10 @@ int main(int argc, char *argv[]){
         result = graph.greedyTSP();
     }
     else if (algorithm_type == 2){
-        std::vector<float> automatic_ACS_input = handleAutomaticACSInput();
-        result = startAutomaticACS(automatic_ACS_input, filename);
+        std::pair<std::vector<float>, std::vector<float>> automatic_ACS_result = handleAutomaticACSInput();
+        std::vector<float> automatic_ACS_input = automatic_ACS_result.first;
+        std::vector<float> automatic_ACS_intervals = automatic_ACS_result.second;
+        result = startAutomaticACS(automatic_ACS_input, automatic_ACS_intervals, filename);
     }
     else{
         std::vector<float> ACS_input = handleACSInput();
@@ -92,17 +94,32 @@ int handleAlgorithmTypeInput(){
     }
 }
 
-std::vector<float> handleAutomaticACSInput(){
+std::pair<std::vector<float>, std::vector<float>> handleAutomaticACSInput(){
     float answer;
     std::vector<float> input_vector;
+    std::vector<float> interval_vector;
     std::cout << "ACS will be tested with interval:" << std::endl;
-    std::cout << "N of ants: 10" << std::endl;
-    std::cout << "Iterations: 25" << std::endl;
-    std::cout << "Alpha: 1" << std::endl;
-    std::cout << "Beta: 1" << std::endl;
-    std::cout << "p: 0.1" << std::endl;
-    std::cout << "Q: 50" << std::endl;
-    std::cout << "c: 0.5" << std::endl;
+    std::cout << "N of ants: ";
+    std::cin >> answer;
+    interval_vector.push_back(answer);
+    std::cout << "Iterations: ";
+    std::cin >> answer;
+    interval_vector.push_back(answer);
+    std::cout << "Alpha: ";
+    std::cin >> answer;
+    interval_vector.push_back(answer);
+    std::cout << "Beta: ";
+    std::cin >> answer;
+    interval_vector.push_back(answer);
+    std::cout << "p: ";
+    std::cin >> answer;
+    interval_vector.push_back(answer);
+    std::cout << "Q: ";
+    std::cin >> answer;
+    interval_vector.push_back(answer);
+    std::cout << "c: ";
+    std::cin >> answer;
+    interval_vector.push_back(answer);
     std::cout << "--- Input data --- " << std::endl;
     std::cout << "N_min: ";
     std::cin >> answer;
@@ -146,10 +163,10 @@ std::vector<float> handleAutomaticACSInput(){
     std::cout << "c_max: ";
     std::cin >> answer;
     input_vector.push_back(answer);
-    return input_vector;
+    return std::pair<std::vector<float>, std::vector<float>>(input_vector, interval_vector);
 }
 
-std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_input, std::string filename){
+std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_input, std::vector<float> a_ACS_intervals, std::string filename){
     int N_min = static_cast<int>(a_ACS_input[0]), N_max = static_cast<int>(a_ACS_input[1]);
     int it_min = static_cast<int>(a_ACS_input[2]), it_max = static_cast<int>(a_ACS_input[3]);
     float alpha_min = a_ACS_input[4], alpha_max = a_ACS_input[5];
@@ -157,6 +174,7 @@ std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_in
     float p_min = a_ACS_input[8], p_max = a_ACS_input[9];
     float Q_min = a_ACS_input[10], Q_max = a_ACS_input[11];
     float c_min = a_ACS_input[12], c_max = a_ACS_input[13];
+    float N_interval = a_ACS_intervals[0], it_interval = a_ACS_intervals[1], alpha_interval = a_ACS_intervals[2], beta_interval = a_ACS_intervals[3], p_interval = a_ACS_intervals[4], Q_interval = a_ACS_intervals[5], c_interval = a_ACS_intervals[6];
     std::pair<float, std::vector<int>> result;
     float min_distance, best_distance = std::numeric_limits<float>::max();
     std::vector<int> min_route, best_route;
@@ -166,14 +184,14 @@ std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_in
 
     std::ofstream resultFile(fname);
     int count = 0;
-    int max_count = ((N_max-N_min)/10.0 + 1) * ((it_max-it_min)/25.0 + 1) * ((alpha_max-alpha_min)/1.0 + 1) * ((beta_max-beta_min)/1.0 + 1) * ((p_max-p_min)/0.1 + 1) * ((Q_max-Q_min)/50.0 + 1) * ((c_max-c_min)/0.5 + 1);
-    for (int N = N_min; N <= N_max; N+=10){
-        for (int it = it_min; it <= it_max; it+=25){
-            for (float alpha = alpha_min; alpha <= alpha_max; alpha+=1.0){
-                for (float beta = beta_min; beta <= beta_max; beta+=1.0){
-                    for (float p = p_min; p <= p_max; p+=0.1){
-                        for (float Q = Q_min; Q <= Q_max; Q+=50){
-                            for (float c = c_min; c <= c_max; c+=0.5){
+    int max_count = (int)((N_max-N_min)/N_interval + 1) * (int)((it_max-it_min)/it_interval + 1) * (int)((alpha_max-alpha_min)/alpha_interval + 1) * (int)((beta_max-beta_min)/beta_interval + 1) * (int)((p_max-p_min)/p_interval + 1) * (int)((Q_max-Q_min)/Q_interval + 1) * (int)((c_max-c_min)/c_interval + 1);
+    for (int N = N_min; N <= N_max; N+=N_interval){
+        for (int it = it_min; it <= it_max; it+=it_interval){
+            for (float alpha = alpha_min; alpha <= alpha_max; alpha+=alpha_interval){
+                for (float beta = beta_min; beta <= beta_max; beta+=beta_interval){
+                    for (float p = p_min; p <= p_max; p+=p_interval){
+                        for (float Q = Q_min; Q <= Q_max; Q+=Q_interval){
+                            for (float c = c_min; c <= c_max; c+=c_interval){
                                 result = graph.antColonySystem(N, it, alpha, beta, p, Q, c);
                                 min_distance = result.first;
                                 min_route = result.second;
