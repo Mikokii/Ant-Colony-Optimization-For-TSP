@@ -31,7 +31,7 @@ int main(int argc, char *argv[]){
     }
     else{
         std::vector<float> ACS_input = handleACSInput();
-        result = graph.antColonySystem(static_cast<int>(ACS_input[0]), static_cast<int>(ACS_input[1]), ACS_input[2], ACS_input[3], ACS_input[4], ACS_input[5], ACS_input[6]);
+        result = graph.antColonySystem(static_cast<int>(ACS_input[0]), static_cast<int>(ACS_input[1]), ACS_input[2], ACS_input[3], ACS_input[4], ACS_input[5], ACS_input[6], false);
     }
 
     float min_distance = result.first;
@@ -192,7 +192,7 @@ std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_in
                     for (float p = p_min; p <= p_max; p+=p_interval){
                         for (float Q = Q_min; Q <= Q_max; Q+=Q_interval){
                             for (float c = c_min; c <= c_max; c+=c_interval){
-                                result = graph.antColonySystem(N, it, alpha, beta, p, Q, c);
+                                result = graph.antColonySystem(N, it, alpha, beta, p, Q, c, true);
                                 min_distance = result.first;
                                 min_route = result.second;
                                 if (min_distance < best_distance){

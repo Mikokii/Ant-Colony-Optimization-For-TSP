@@ -109,7 +109,7 @@ std::vector<std::vector<float>> Graph::getAdjacencyMatrix(){
     return adjacency_matrix;
 }
 
-std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float alpha, float beta, float p, float Q, float c){
+std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float alpha, float beta, float p, float Q, float c, bool isAutomatic){
 
     std::uniform_int_distribution<int> rng(0, vertices_number-1);
 
@@ -125,7 +125,9 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
     std::vector<std::vector<long double>> ants_probability (ants_number, std::vector<long double> (vertices_number, 0));
 
     for (int i = 0; i<iterations; i++){
-        std::cout << "Iteration: " << i << "    ";
+        if(!isAutomatic){
+            std::cout << "Iteration: " << i << "    ";
+        }
         for (int a = 0; a < ants_number; a++){
             ants_paths[a].push_back(rng(g));
             ants_allowed[a][ants_paths[a][0]] = 0;
@@ -134,7 +136,7 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
             for (int a = 0; a < ants_number; a++){
                 int current_point = ants_paths[a].back();
                 calculateProbability(current_point, ants_allowed[a], ants_probability[a], trail_matrix, alpha, beta);
-                int point = pickNextPoint(ants_probability[a]);
+                int point = pickNextPoint(ants_probability[a], ants_allowed[a]);
                 ants_paths[a].push_back(point);
                 ants_allowed[a][point] = 0;
             }
@@ -166,7 +168,9 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
             ants_paths[a].clear();
             ants_allowed[a] = std::vector<int>(vertices_number, 1);
         }
-        std::cout << "distance: " << min_distance << std::endl;
+        if(!isAutomatic){
+            std::cout << "distance: " << min_distance << std::endl;
+        }
     }
     return std::pair<float, std::vector<int>>(min_distance, route);
 }
@@ -177,57 +181,47 @@ void Graph::calculateProbability(int current_point, std::vector<int> &allowed, s
         if(allowed[i] == 0){
             continue;
         }
-        long double calc = pow(trail_matrix[current_point][i], alpha) * pow(1.0/adjacency_matrix[current_point][i], beta);
-        if(calc < 0){
-            denominator += std::numeric_limits<long double>::min();
+        if(i == current_point){
+            allowed[i] = 0;
+            continue;
         }
-        else{
+        long double calc = pow(trail_matrix[current_point][i], alpha) * pow(1.0/adjacency_matrix[current_point][i], beta);
+        if(calc >= 0){
             denominator += calc;
         }
     }
-    if(denominator <= 0) std::cout << "denominator <= 0 : " << denominator << std::endl;
     for (int i = 0; i < vertices_number; i++){
-        if(i == current_point){
-            allowed[i] = 0;
-            probabilities[i] = 0;
-        }
-        else if (allowed[i] == 0){
+        if (allowed[i] == 0){
             probabilities[i] = 0;
         }
         else{
-            long double numerator = pow(trail_matrix[current_point][i], alpha)/pow(adjacency_matrix[current_point][i], beta);
-            if(numerator <= 0){
-                std::cout << "numerator <= 0" << " at i= " << i << "tau = " << trail_matrix[current_point][i] << "distance = " << adjacency_matrix[current_point][i] << std::endl;
+            if(denominator <= 0){
                 probabilities[i] = 0;
                 continue;
             }
-            else if(denominator == 0){
-                std::cout << "denominator = 0" << " at i= " << i << "tau = " << trail_matrix[current_point][i] << "distance = " << adjacency_matrix[current_point][i] << std::endl;
-                probabilities[i] = 1;
-                continue;
-            }
-            else{
-                probabilities[i] = numerator/denominator;
-                continue;
-            }
+            long double numerator = pow(trail_matrix[current_point][i], alpha)/pow(adjacency_matrix[current_point][i], beta);
+            long double number = numerator/denominator;
+            probabilities[i] = numerator/denominator;
         }
     }
 }
 
-
-int Graph::pickNextPoint(std::vector<long double> &probabilities){
-    
+int Graph::pickNextPoint(std::vector<long double> &probabilities, std::vector<int> &allowed){
     std::uniform_real_distribution<long double> rng(0.0, 1.0);
     long double random_choice;
-    while (true){
-        random_choice = rng(g);
-        for (int i = 0; i < vertices_number; i++){
-            if (random_choice < probabilities[i]){
-                return i;
-            }
-            random_choice -= probabilities[i];
+    random_choice = rng(g);
+    for (int i = 0; i < vertices_number; i++){
+        if (random_choice < probabilities[i]){
+            return i;
+        }
+        random_choice -= probabilities[i];
+    }
+    for (int i = 0; i < vertices_number; i++){
+        if(allowed[i] == 1){
+            return i;
         }
     }
+    return -1;
 }
 
 float calculateDistance(std::pair<int, int> point1, std::pair<int, int> point2){
