@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <chrono>
 #include "Graph.hpp"
 
 std::string handleInstanceInput(int argc, char *argv[]);
@@ -192,16 +193,21 @@ std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_in
                     for (float p = p_min; p <= p_max; p+=p_interval){
                         for (float Q = Q_min; Q <= Q_max; Q+=Q_interval){
                             for (float c = c_min; c <= c_max; c+=c_interval){
+                                auto start = std::chrono::high_resolution_clock::now();
                                 result = graph.antColonySystem(N, it, alpha, beta, p, Q, c, true);
+                                auto stop = std::chrono::high_resolution_clock::now();
+                                auto duration = std::chrono::duration_cast<std::chrono::duration<float>>(stop - start);
+                                float time = duration.count();
+                                std::cout << time << std::endl;
                                 min_distance = result.first;
                                 min_route = result.second;
                                 if (min_distance < best_distance){
                                     best_distance = min_distance;
                                     best_route = min_route;
-                                    best_parameters.assign({static_cast<float>(N), static_cast<float>(it), alpha, beta, p, Q, c});
+                                    best_parameters.assign({static_cast<float>(N), static_cast<float>(it), alpha, beta, p, Q, c, time});
                                 }
                                 if (resultFile.is_open()){
-                                    resultFile << "N: " << N << " It: " << it << " Alpha: " << alpha << " Beta: " << beta << " p: " << p << " Q: " << Q << " c: " << c << std::endl;
+                                    resultFile << "N: " << N << " It: " << it << " Alpha: " << alpha << " Beta: " << beta << " p: " << p << " Q: " << Q << " c: " << c << " t: " << time << std::endl;
                                     resultFile << "Calculated distance: " << min_distance << std::endl;
                                     resultFile << "Calculated route: ";
                                     for (int i = 0; i < min_route.size(); i++){
@@ -225,7 +231,7 @@ std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_in
         resultFile << std::endl;
         resultFile << "---------- Best Result ----------" << std::endl;
         resultFile << "N: " << best_parameters[0] << " It: " << best_parameters[1] << " Alpha: " << best_parameters[2] << " Beta: " << best_parameters[3] << 
-            " p: " << best_parameters[4] << " Q: " << best_parameters[5] << " c: " << best_parameters[6] << std::endl;
+            " p: " << best_parameters[4] << " Q: " << best_parameters[5] << " c: " << best_parameters[6] << " t: " << best_parameters[7] << std::endl;
         resultFile << "Calculated distance: " << best_distance << std::endl;
         resultFile << "Calculated route: ";
         for (int i = 0; i < best_route.size(); i++){
