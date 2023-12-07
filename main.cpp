@@ -198,7 +198,6 @@ std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_in
                                 auto stop = std::chrono::high_resolution_clock::now();
                                 auto duration = std::chrono::duration_cast<std::chrono::duration<float>>(stop - start);
                                 float time = duration.count();
-                                std::cout << time << std::endl;
                                 min_distance = result.first;
                                 min_route = result.second;
                                 if (min_distance < best_distance){
