@@ -8,13 +8,14 @@ std::string handleInstanceInput(int argc, char *argv[]);
 int handleAlgorithmTypeInput();
 std::vector<float> handleACSInput();
 std::pair<std::vector<float>, std::vector<float>> handleAutomaticACSInput();
-std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_input, std::vector<float> a_ACS_intervals, std::string filename);
+void startAutomaticACS(std::vector<float> a_ACS_input, std::vector<float> a_ACS_intervals, std::string filename);
 void saveResultToFile(float min_distance, std::vector<int> min_route, std::string filename);
 
 Graph graph;
 
 int main(int argc, char *argv[]){
-    std::pair<float, std::vector<int>> result;
+    float min_distance;
+    std::vector<int> min_route;
 
     std::string filename = handleInstanceInput(argc, argv);
     graph.generateAdjacencyMatrix();
@@ -22,21 +23,21 @@ int main(int argc, char *argv[]){
     int algorithm_type = handleAlgorithmTypeInput();
 
     if (algorithm_type == 1){
-        result = graph.greedyTSP();
+        graph.greedyTSP();
     }
     else if (algorithm_type == 2){
         std::pair<std::vector<float>, std::vector<float>> automatic_ACS_result = handleAutomaticACSInput();
         std::vector<float> automatic_ACS_input = automatic_ACS_result.first;
         std::vector<float> automatic_ACS_intervals = automatic_ACS_result.second;
-        result = startAutomaticACS(automatic_ACS_input, automatic_ACS_intervals, filename);
+        startAutomaticACS(automatic_ACS_input, automatic_ACS_intervals, filename);
     }
     else{
         std::vector<float> ACS_input = handleACSInput();
-        result = graph.antColonySystem(static_cast<int>(ACS_input[0]), static_cast<int>(ACS_input[1]), ACS_input[2], ACS_input[3], ACS_input[4], ACS_input[5], ACS_input[6], false);
+        graph.antColonySystem(static_cast<int>(ACS_input[0]), static_cast<int>(ACS_input[1]), ACS_input[2], ACS_input[3], ACS_input[4], ACS_input[5], ACS_input[6], false);
     }
 
-    float min_distance = result.first;
-    std::vector<int> min_route = result.second;
+    min_distance = graph.getMinDistance();
+    min_route = graph.getBestRoute();
 
     saveResultToFile(min_distance, min_route, filename);
     std::cout << "Calculated distance: " << min_distance << std::endl;
@@ -167,7 +168,7 @@ std::pair<std::vector<float>, std::vector<float>> handleAutomaticACSInput(){
     return std::pair<std::vector<float>, std::vector<float>>(input_vector, interval_vector);
 }
 
-std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_input, std::vector<float> a_ACS_intervals, std::string filename){
+void startAutomaticACS(std::vector<float> a_ACS_input, std::vector<float> a_ACS_intervals, std::string filename){
     int N_min = static_cast<int>(a_ACS_input[0]), N_max = static_cast<int>(a_ACS_input[1]);
     int it_min = static_cast<int>(a_ACS_input[2]), it_max = static_cast<int>(a_ACS_input[3]);
     float alpha_min = a_ACS_input[4], alpha_max = a_ACS_input[5];
@@ -194,12 +195,12 @@ std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_in
                         for (float Q = Q_min; Q <= Q_max; Q+=Q_interval){
                             for (float c = c_min; c <= c_max; c+=c_interval){
                                 auto start = std::chrono::high_resolution_clock::now();
-                                result = graph.antColonySystem(N, it, alpha, beta, p, Q, c, true);
+                                graph.antColonySystem(N, it, alpha, beta, p, Q, c, true);
                                 auto stop = std::chrono::high_resolution_clock::now();
                                 auto duration = std::chrono::duration_cast<std::chrono::duration<float>>(stop - start);
                                 float time = duration.count();
-                                min_distance = result.first;
-                                min_route = result.second;
+                                min_distance = graph.getMinDistance();
+                                min_route = graph.getBestRoute();
                                 if (min_distance < best_distance){
                                     best_distance = min_distance;
                                     best_route = min_route;
@@ -242,7 +243,8 @@ std::pair<float, std::vector<int>> startAutomaticACS(std::vector<float> a_ACS_in
         std::cout << "Error. Couldn't write to file " << std::endl;
     }
     resultFile.close();
-    return std::pair<float, std::vector<int>>(best_distance, best_route);
+    graph.setMinDistance(min_distance);
+    graph.setBestRoute(best_route);
 }
 
 std::vector<float> handleACSInput(){

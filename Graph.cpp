@@ -3,7 +3,9 @@
 unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::mt19937 g(seed);
 
-Graph::Graph(){}
+Graph::Graph(){
+    min_distance = std::numeric_limits<float>::max();
+}
 
 Graph::~Graph(){}
 
@@ -79,7 +81,7 @@ void Graph::generateAdjacencyMatrix(){
     }
 }
 
-std::pair<float, std::vector<int>> Graph::greedyTSP(){
+void Graph::greedyTSP(){
     std::vector<int> visited(vertices_number, 0), route;
     int current_vertex, destination_vertex;
     float min_distance, full_distance = 0.0;
@@ -101,20 +103,17 @@ std::pair<float, std::vector<int>> Graph::greedyTSP(){
     }
     route.push_back(0);
     full_distance += adjacency_matrix[0][destination_vertex];
-    
-    return std::pair<float, std::vector<int>>(full_distance, route);
+    this->min_distance = full_distance;
+    this->best_route = route;
 }
 
 std::vector<std::vector<float>> Graph::getAdjacencyMatrix(){
     return adjacency_matrix;
 }
 
-std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float alpha, float beta, float p, float Q, float c, bool isAutomatic){
+void Graph::antColonySystem(int a_n, int it, float alpha, float beta, float p, float Q, float c, bool isAutomatic){
 
     std::uniform_int_distribution<int> rng(0, vertices_number-1);
-
-    float min_distance = std::numeric_limits<float>::max();
-    std::vector<int> route;
 
     iterations = it;
     ants_number = a_n;
@@ -153,7 +152,7 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
             }
             if (distance < min_distance){
                 min_distance = distance;
-                route = ants_paths[a];
+                best_route = ants_paths[a];
             }
         }
         for (int k = 0; k < vertices_number; k++){
@@ -172,7 +171,6 @@ std::pair<float, std::vector<int>> Graph::antColonySystem(int a_n, int it, float
             std::cout << "distance: " << min_distance << std::endl;
         }
     }
-    return std::pair<float, std::vector<int>>(min_distance, route);
 }
 
 void Graph::calculateProbability(int current_point, std::vector<int> &allowed, std::vector<long double> &probabilities, std::vector<std::vector<float>> &trail_matrix, float alpha, float beta){
@@ -222,6 +220,22 @@ int Graph::pickNextPoint(std::vector<long double> &probabilities, std::vector<in
         }
     }
     return -1;
+}
+
+float Graph::getMinDistance(){
+    return min_distance;
+}
+
+std::vector<int> Graph::getBestRoute(){
+    return best_route;
+}
+
+void Graph::setMinDistance(float min_distance){
+    this->min_distance = min_distance;
+}
+
+void Graph::setBestRoute(std::vector<int> best_route){
+    this->best_route = best_route;
 }
 
 float calculateDistance(std::pair<int, int> point1, std::pair<int, int> point2){
