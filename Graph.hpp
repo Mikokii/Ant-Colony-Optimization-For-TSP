@@ -12,6 +12,7 @@
 class Graph{
 private:
     int vertices_number;
+    bool isLongInstance;
     float min_distance;
     std::vector<int> best_route;
     std::vector<std::pair<int,int>> vertices_list;
@@ -35,6 +36,7 @@ public:
     std::vector<int> getBestRoute();
     void setMinDistance(float min_distance);
     void setBestRoute(std::vector<int> best_route);
+    bool timeoutStop(const std::chrono::time_point<std::chrono::high_resolution_clock>& start_time);
 };
 
 float calculateDistance(std::pair<int, int> point1, std::pair<int, int> point2);

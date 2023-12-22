@@ -1,5 +1,8 @@
 #include "Graph.hpp"
 
+#define LONG_TIME 295.0
+#define SHORT_TIME 178.0
+
 unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::mt19937 g(seed);
 
@@ -112,7 +115,7 @@ std::vector<std::vector<float>> Graph::getAdjacencyMatrix(){
 }
 
 void Graph::antColonySystem(int a_n, int it, float alpha, float beta, float p, float Q, float c, bool isAutomatic){
-
+    auto start_time = std::chrono::high_resolution_clock::now();
     std::uniform_int_distribution<int> rng(0, vertices_number-1);
 
     iterations = it;
@@ -123,7 +126,17 @@ void Graph::antColonySystem(int a_n, int it, float alpha, float beta, float p, f
     std::vector<std::vector<int>> ants_allowed (ants_number, std::vector<int>(vertices_number, 1));
     std::vector<std::vector<long double>> ants_probability (ants_number, std::vector<long double> (vertices_number, 0));
 
+    if (vertices_number > 500){
+        isLongInstance = true;
+    }
+    else {
+        isLongInstance = false;
+    }
+
     for (int i = 0; i<iterations; i++){
+        if (timeoutStop(start_time)){
+                return;
+        }
         if(!isAutomatic){
             std::cout << "Iteration: " << i << "    ";
         }
@@ -236,6 +249,27 @@ void Graph::setMinDistance(float min_distance){
 
 void Graph::setBestRoute(std::vector<int> best_route){
     this->best_route = best_route;
+}
+
+bool Graph::timeoutStop(const std::chrono::time_point<std::chrono::high_resolution_clock>& start_time){
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::duration<float>>(stop - start_time);
+    if (isLongInstance){
+        if (duration.count() > LONG_TIME){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        if (duration.count() > SHORT_TIME){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 }
 
 float calculateDistance(std::pair<int, int> point1, std::pair<int, int> point2){
