@@ -1,7 +1,7 @@
 #include "Graph.hpp"
 
-#define LONG_TIME 295.0
-#define SHORT_TIME 178.0
+#define LONG_TIME 290.0
+#define SHORT_TIME 175.0
 
 unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::mt19937 g(seed);

@@ -250,7 +250,7 @@ void startAutomaticACS(std::vector<float> a_ACS_input, std::vector<float> a_ACS_
 std::vector<float> handleACSInput(){
     float answer;
     std::cout << "Default settings (0) or custom settings (1)" << std::endl;
-    std::cout << "Default settings: N of ants: 100, Iterations: 100, Alpha: 1, Beta: 5, p: 0.5, Q: 100, c: 1" << std::endl;
+    std::cout << "Default settings: N of ants: 100, Iterations: 1000000, Alpha: 1, Beta: 5, p: 0.5, Q: 100, c: 1" << std::endl;
     std::cin >> answer;
     if (answer){
         std::vector<float> input_vector;
@@ -277,7 +277,7 @@ std::vector<float> handleACSInput(){
         input_vector.push_back(answer);
         return input_vector;
     }
-    return std::vector<float> {100, 100, 1, 5, 0.5, 100, 1};
+    return std::vector<float> {100, 1000000, 1, 5, 0.5, 100, 1};
 }
 
 void saveResultToFile(float min_distance, std::vector<int> min_route, std::string filename){
