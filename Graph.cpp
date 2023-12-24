@@ -115,6 +115,8 @@ std::vector<std::vector<float>> Graph::getAdjacencyMatrix(){
 }
 
 void Graph::antColonySystem(int a_n, int it, float alpha, float beta, float p, float Q, float c, bool isAutomatic){
+    min_distance = std::numeric_limits<float>::max();
+
     auto start_time = std::chrono::high_resolution_clock::now();
     std::uniform_int_distribution<int> rng(0, vertices_number-1);
 
