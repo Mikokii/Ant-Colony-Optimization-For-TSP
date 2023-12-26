@@ -32,6 +32,6 @@ for key in results:
     results[key] = round(sum(results[key])/len(results[key]),2)
 
 for key, value in results.items():
-    print(key, value)
+    print(key, "   ---   ", value)
 
 f.close()

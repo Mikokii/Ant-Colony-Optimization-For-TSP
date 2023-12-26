@@ -243,7 +243,7 @@ void startAutomaticACS(std::vector<float> a_ACS_input, std::vector<float> a_ACS_
         std::cout << "Error. Couldn't write to file " << std::endl;
     }
     resultFile.close();
-    graph.setMinDistance(min_distance);
+    graph.setMinDistance(best_distance);
     graph.setBestRoute(best_route);
 }
 
