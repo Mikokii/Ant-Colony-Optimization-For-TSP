@@ -14,11 +14,11 @@ for line in text:
         break
     if count%4 == 0:
         key = re.sub(r' It: \d+ ', ' ', line)
-        key = re.sub(r' t: \d+\.\d+\n', '', key)
+        key = re.sub(r' t: \d+(\.\d+)?\n', '', key)
         if key not in results.keys() and key != "\n":
             results[key] = []
     if count%4 == 1:
-        match = re.search(r'\d+\.\d+', line)
+        match = re.search(r'\d+(\.\d+)?', line)
         if match:
             number = float(match.group())
             results[key].append(number)
@@ -33,5 +33,5 @@ for key in results:
 
 for key, value in results.items():
     print(key, value)
-    
+
 f.close()
